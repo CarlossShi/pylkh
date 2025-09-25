@@ -12,7 +12,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.3"
-Click = "^6.0"
+Click = ">=6.0"
 Deprecated = "~1.2.9"
 networkx = "^2.1"
 tabulate = "~0.8.7"
@@ -25,3 +25,4 @@ twine = "^4.0.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+ 
