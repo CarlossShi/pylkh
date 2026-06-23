@@ -15,7 +15,7 @@ python = "^3.3"
 Click = ">=6.0"
 Deprecated = "~1.2.9"
 networkx = "^2.1"
-tabulate = "~0.8.7"
+tabulate = ">=0.9,<1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.2"
