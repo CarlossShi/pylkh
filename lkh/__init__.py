@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import tempfile
 import warnings
+from pathlib import Path
 
 from .problems import LKHProblem
 
@@ -31,7 +32,8 @@ def solve(solver='LKH', problem=None, **params):
     prob_file.close()
     params['problem_file'] = prob_file.name
 
-    if 'tour_file' not in params:
+    has_tour_file = 'tour_file' in params
+    if not has_tour_file:
         tour_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
         params['tour_file'] = tour_file.name
         tour_file.close()
@@ -43,6 +45,13 @@ def solve(solver='LKH', problem=None, **params):
     for k, v in params.items():
         par_file.write(f'{k.upper()} = {v}\n')
     par_file.close()
+
+    tour_path = None
+    if "worker" in params and "output_directory" in params:  # vanilla LKH does not support
+        output_directory: Path = Path(params["output_directory"])
+        output_directory.mkdir(parents=True, exist_ok=True)
+        tour_path = output_directory / f"{params['worker']}.tour"
+        shutil.copy2(par_file.name, output_directory / f"{params['worker']}.par")
 
     try:
         # stdin=DEVNULL for preventing a "Press any key" pause at the end of execution
@@ -73,7 +82,9 @@ def solve(solver='LKH', problem=None, **params):
     os.remove(par_file.name)
     if 'prob_file' in locals():
         os.remove(prob_file.name)
-    if 'tour_file' in locals():
+    if tour_path is not None:
+        shutil.copy2(params["tour_file"], tour_path)
+    if not has_tour_file:
         os.remove(tour_file.name)
 
     return routes
