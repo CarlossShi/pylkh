@@ -1,4 +1,17 @@
 # PyLKH
+
+## Changes from master
+
+- Adds optional `special=True` handling in `lkh.solve(...)`, so `SPECIAL` is written only when explicitly requested.
+- Adds worker output support: when `worker` and `output_directory` are provided, `solve(...)` creates the output directory,
+  - saves a per-worker `.par` file in `<output_directory>/<worker>.par`,
+  - saves the LKH-produced route output as `<output_directory>/<worker>.routes`.
+- Preserves caller-provided `tour_file` paths instead of deleting them after solving.
+- Relaxes the `tabulate` dependency to support `>=0.9,<1.0`.
+- Switches the `tsplib95` submodule URL from SSH to HTTPS for easier checkout.
+
+## Original README
+
 This is a super simple Python wrapper for the constrained traveling salesman and vehicle routing problem solver called [LKH-3](http://akira.ruc.dk/~keld/research/LKH-3/).
 
 If you want to use this wrapper, you need to install LKH-3 first. For example, on Ubuntu:
@@ -15,7 +28,8 @@ It extends the format [to support VRPs](https://github.com/ben-hudson/pylkh/blob
 
 Using PyLKH you can solve problems represented as Python objects or files.
 
-> __CAUTION:__ distances are represented by integer values in the TSPLIB format. This can produce unexpected behaviour for some problems, like those with all nodes within the unit square. You can use the `EXACT_2D` distance to avoid rounding issues.
+> [!caution]
+> Distances are represented by integer values in the TSPLIB format. This can produce unexpected behaviour for some problems, like those with all nodes within the unit square. You can use the `EXACT_2D` distance to avoid rounding issues.
 
 ## Install
 ```

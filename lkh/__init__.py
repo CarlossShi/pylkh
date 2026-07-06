@@ -46,11 +46,11 @@ def solve(solver='LKH', problem=None, **params):
         par_file.write(f'{k.upper()} = {v}\n')
     par_file.close()
 
-    tour_path = None
+    routes_path = None
     if "worker" in params and "output_directory" in params:  # vanilla LKH does not support
         output_directory: Path = Path(params["output_directory"])
         output_directory.mkdir(parents=True, exist_ok=True)
-        tour_path = output_directory / f"{params['worker']}.tour"
+        routes_path = output_directory / f"{params['worker']}.routes"
         shutil.copy2(par_file.name, output_directory / f"{params['worker']}.par")
 
     try:
@@ -82,8 +82,8 @@ def solve(solver='LKH', problem=None, **params):
     os.remove(par_file.name)
     if 'prob_file' in locals():
         os.remove(prob_file.name)
-    if tour_path is not None:
-        shutil.copy2(params["tour_file"], tour_path)
+    if routes_path is not None:
+        shutil.copy2(params["tour_file"], routes_path)
     if not has_tour_file:
         os.remove(tour_file.name)
 
