@@ -99,16 +99,25 @@ class LKHProblem(tsplib.models.StandardProblem):
         return '\n'.join(kvpairs)
 
     @classmethod
-    def load_routes(cls, problem: LKHProblem, solution_path: Path) -> list[list[int]]:
+    def load_routes(
+        cls,
+        problem: LKHProblem,
+        *,
+        routes_lkh: None | LKHProblem = None,
+        routes_path: None | Path = None
+    ) -> list[list[int]]:
         # the tour file produced by LKH-3 includes dummy nodes to indicate depots
         # for example, if a problem has DIMENSION=32 (1 depot node + 31 task nodes),
         # the tour file will have a SINGLE tour with DIMENSION=36 (5 depot nodes + 31 task nodes)
+        if (routes_lkh is None) == (routes_path is None):
+            raise ValueError("Exactly one of routes_lkh or routes_path must be provided")
         if problem.type == "CVRP" and problem.depots != [1]:
             raise ValueError(f"LKH-3 does not support multi-depot CVRP problems, but got depots {problem.depots}")
-        solution: LKHProblem = cls.load(solution_path)
-        if not solution.type == "TOUR":
-            raise ValueError(f"Expected solution file {solution_path} to be of type TOUR, but got {solution.type}")
-        tour: list[int] = solution.tours[0]
+        if routes_lkh is None:
+            routes_lkh = cls.load(routes_path)
+        if not routes_lkh.type == "TOUR":
+            raise ValueError(f"Expected routes file {routes_path} to be of type TOUR, but got {routes_lkh.type}")
+        tour: list[int] = routes_lkh.tours[0]
         # convert this tour to multiple routes
         routes: list[list[int]] = []
         route: list[int] = []

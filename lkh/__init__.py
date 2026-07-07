@@ -67,5 +67,5 @@ def solve(solver='LKH', problem=None, **params):
 
     return LKHProblem.load_routes(
         problem=problem,
-        solution_path=routes_path
+        routes_path=routes_path
     )
