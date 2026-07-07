@@ -1,4 +1,6 @@
+from __future__ import annotations
 import math
+from pathlib import Path
 import tsplib95 as tsplib
 
 from tsplib95 import transformers, distances
@@ -95,3 +97,33 @@ class LKHProblem(tsplib.models.StandardProblem):
 
         # join and return the result
         return '\n'.join(kvpairs)
+
+    @classmethod
+    def load_routes(cls, problem: LKHProblem, solution_path: Path) -> list[list[int]]:
+        # the tour file produced by LKH-3 includes dummy nodes to indicate depots
+        # for example, if a problem has DIMENSION=32 (1 depot node + 31 task nodes),
+        # the tour file will have a SINGLE tour with DIMENSION=36 (5 depot nodes + 31 task nodes)
+        if problem.type == "CVRP" and problem.depots != [1]:
+            raise ValueError(f"LKH-3 does not support multi-depot CVRP problems, but got depots {problem.depots}")
+        solution: LKHProblem = cls.load(solution_path)
+        if not solution.type == "TOUR":
+            raise ValueError(f"Expected solution file {solution_path} to be of type TOUR, but got {solution.type}")
+        tour: list[int] = solution.tours[0]
+        # convert this tour to multiple routes
+        routes: list[list[int]] = []
+        route: list[int] = []
+        for node in tour:
+            if node in problem.depots or node > problem.dimension:
+                if len(route) > 0:
+                    routes.append(route)
+                route = []
+            else:
+                route.append(node)
+        routes.append(route)
+
+        # the above is the original implementation from __init__.py
+        # we need to further process the routes to convert to 0-based indexing and validate TSP tours for pyvrp
+        routes = [[node - 1 for node in route] for route in routes]  # convert to 0-based indexing, as pyvrp expects
+        if problem.type == "TSP" and (first_node := routes[0].pop(0)) != 0:
+            raise ValueError(f"Expected TSP tour to start with depot node 0, but got {first_node}")
+        return routes

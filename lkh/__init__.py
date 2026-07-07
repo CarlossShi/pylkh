@@ -61,25 +61,11 @@ def solve(solver='LKH', problem=None, **params):
     if not os.path.isfile(routes_path) or os.stat(routes_path).st_size == 0:
         raise NoToursException(f"{routes_path} does not appear to contain any tours. LKH probably did not find solution.")
 
-    # the tour file produced by LKH-3 includes dummy nodes to indicate depots
-    # for example, if a problem has DIMENSION=32 (1 depot node + 31 task nodes),
-    # the tour file will have a SINGLE tour with DIMENSION=36 (5 depot nodes + 31 task nodes)
-    solution = LKHProblem.load(routes_path)
-    tour = solution.tours[0]
-    # convert this tour to multiple routes
-    routes = []
-    route = []
-    for node in tour:
-        if node in problem.depots or node > problem.dimension:
-            if len(route) > 0:
-                routes.append(route)
-            route = []
-        else:
-            route.append(node)
-    routes.append(route)
-
     os.remove(par_file.name)
     if 'prob_file' in locals():
         os.remove(prob_file.name)
 
-    return routes
+    return LKHProblem.load_routes(
+        problem=problem,
+        solution_path=routes_path
+    )
