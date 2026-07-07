@@ -32,11 +32,16 @@ def solve(solver='LKH', problem=None, **params):
     prob_file.close()
     params['problem_file'] = prob_file.name
 
-    has_tour_file = 'tour_file' in params
-    if not has_tour_file:
-        tour_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
-        params['tour_file'] = tour_file.name
-        tour_file.close()
+    # vanilla LKH does not support worker/output_directory; assume modified LKH use worker & output_directory to output the routs automatically, instead of parsing TOUR_FILE explicitly
+    if "worker" not in params:
+        params["worker"] = "lkh"
+    if "output_directory" not in params:
+        params["output_directory"] = tempfile.gettempdir()
+    worker: str = str(params["worker"])
+    output_directory: Path = Path(params["output_directory"])
+    output_directory.mkdir(parents=True, exist_ok=True)
+    par_path: Path = output_directory / f"{worker}.par"
+    routes_path: Path = output_directory / f"{worker}.routes"
 
     par_file = tempfile.NamedTemporaryFile(mode='w+', delete=False)
     special = params.pop("special", False)
@@ -45,13 +50,7 @@ def solve(solver='LKH', problem=None, **params):
     for k, v in params.items():
         par_file.write(f'{k.upper()} = {v}\n')
     par_file.close()
-
-    routes_path = None
-    if "worker" in params and "output_directory" in params:  # vanilla LKH does not support
-        output_directory: Path = Path(params["output_directory"])
-        output_directory.mkdir(parents=True, exist_ok=True)
-        routes_path = output_directory / f"{params['worker']}.routes"
-        shutil.copy2(par_file.name, output_directory / f"{params['worker']}.par")
+    shutil.copy2(par_file.name, par_path)
 
     try:
         # stdin=DEVNULL for preventing a "Press any key" pause at the end of execution
@@ -59,13 +58,13 @@ def solve(solver='LKH', problem=None, **params):
     except subprocess.CalledProcessError as e:
         raise Exception(e.output.decode())
 
-    if not os.path.isfile(params['tour_file']) or os.stat(params['tour_file']).st_size == 0:
-        raise NoToursException(f"{params['tour_file']} does not appear to contain any tours. LKH probably did not find solution.")
+    if not os.path.isfile(routes_path) or os.stat(routes_path).st_size == 0:
+        raise NoToursException(f"{routes_path} does not appear to contain any tours. LKH probably did not find solution.")
 
     # the tour file produced by LKH-3 includes dummy nodes to indicate depots
     # for example, if a problem has DIMENSION=32 (1 depot node + 31 task nodes),
     # the tour file will have a SINGLE tour with DIMENSION=36 (5 depot nodes + 31 task nodes)
-    solution = LKHProblem.load(params['tour_file'])
+    solution = LKHProblem.load(routes_path)
     tour = solution.tours[0]
     # convert this tour to multiple routes
     routes = []
@@ -82,9 +81,5 @@ def solve(solver='LKH', problem=None, **params):
     os.remove(par_file.name)
     if 'prob_file' in locals():
         os.remove(prob_file.name)
-    if routes_path is not None:
-        shutil.copy2(params["tour_file"], routes_path)
-    if not has_tour_file:
-        os.remove(tour_file.name)
 
     return routes

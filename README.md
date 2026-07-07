@@ -3,10 +3,9 @@
 ## Changes from master
 
 - Adds optional `special=True` handling in `lkh.solve(...)`, so `SPECIAL` is written only when explicitly requested.
-- Adds worker output support: when `worker` and `output_directory` are provided, `solve(...)` creates the output directory,
-  - saves a per-worker `.par` file in `<output_directory>/<worker>.par`,
-  - saves the LKH-produced route output as `<output_directory>/<worker>.routes`.
-- Preserves caller-provided `tour_file` paths instead of deleting them after solving.
+- Adds modified-LKH worker output support: `solve(...)` always writes `WORKER` and `OUTPUT_DIRECTORY` parameters, defaulting to `worker="lkh"` and the system temporary directory.
+  - Saves a per-worker `.par` copy as `<output_directory>/<worker>.par`.
+  - Reads the LKH-produced routes from `<output_directory>/<worker>.routes` instead of passing or copying `TOUR_FILE`.
 - Relaxes the `tabulate` dependency to support `>=0.9,<1.0`.
 - Switches the `tsplib95` submodule URL from SSH to HTTPS for easier checkout.
 
