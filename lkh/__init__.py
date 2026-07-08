@@ -41,7 +41,7 @@ def solve(solver='LKH', problem=None, **params):
     output_directory: Path = Path(params["output_directory"])
     output_directory.mkdir(parents=True, exist_ok=True)
     par_path: Path = output_directory / f"{worker}.par"
-    routes_path: Path = output_directory / f"{worker}.routes"
+    routes_path: Path = output_directory / f"{worker}.sol"
 
     par_file = tempfile.NamedTemporaryFile(mode='w+', delete=False)
     special = params.pop("special", False)

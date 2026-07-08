@@ -5,9 +5,9 @@
 - Adds optional `special=True` handling in `lkh.solve(...)`, so `SPECIAL` is written only when explicitly requested.
 - Adds modified-LKH worker output support: `solve(...)` always writes `WORKER` and `OUTPUT_DIRECTORY` parameters, defaulting to `worker="lkh"` and the system temporary directory.
   - Saves a per-worker `.par` copy as `<output_directory>/<worker>.par`.
-  - Reads the LKH-produced routes from `<output_directory>/<worker>.routes` instead of passing or copying `TOUR_FILE`.
+  - Reads the LKH-produced routes from `<output_directory>/<worker>.sol` instead of passing or copying `TOUR_FILE`.
 - Adds `LKHProblem.load_routes(problem, *, routes_lkh=None, routes_path=None)` for parsing LKH route output without invoking the solver.
-  - Pass `routes_path` to parse a `.routes`/TOUR file.
+  - Pass `routes_path` to parse a `.sol`/TOUR file.
   - Pass `routes_lkh` to reuse an already parsed TOUR-type `LKHProblem`.
 - **Breaking:** route outputs are converted from LKH/TSPLIB 1-based node IDs to PyVRP-compatible 0-based node indices.
   - TSP route output removes the leading depot node.
